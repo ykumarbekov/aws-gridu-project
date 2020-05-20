@@ -1,9 +1,0 @@
-sudo yum update -y
-sudo yum install python36 -y
-sudo yum install git -y
-git clone https://github.com/ykumarbekov/aws-gridu-project.git
-mkdir $HOME/logs
-chmod +x $HOME/aws-gridu-project/runner.sh
-sudo touch /var/spool/cron/$USER
-echo "10 * * * * $HOME/aws-gridu-project/runner.sh"|sudo tee -a /var/spool/cron/$USER
-sudo crontab -u $USER -l
