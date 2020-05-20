@@ -18,10 +18,14 @@ def file_validator(s):
     return os.path.exists(s) and os.path.isfile(s)
 
 
-def get_data_list(s):
+def folder_validator(s):
+    return os.path.exists(s) and os.path.isdir(s)
+
+
+def get_data_list(s, delimiter):
     out_list = []
     with open(s, newline='') as out_csv:
-        reader = csv.DictReader(out_csv)
+        reader = csv.DictReader(out_csv, delimiter=delimiter)
         for r in reader:
             out_list.append(r)
     return out_list
@@ -32,8 +36,9 @@ def gen_text(n):
     return ''.join(rnd.choice(letters) for i in range(n))
 
 
-def gen_text_row(k, title=True):
+def gen_random_review(title=True):
     row = []
+    k = rnd.randint(1, 5)
     i = k
     while i > 0:
         if title and i == k:
@@ -43,10 +48,3 @@ def gen_text_row(k, title=True):
         i = i - 1
     return ' '.join(row)
 
-
-def gen_text_block(p):
-    row = []
-    while p > 0:
-        row.append(gen_text_row(rnd.randint(3, 5)))
-        p = p - 1
-    return '\n'.join(row)

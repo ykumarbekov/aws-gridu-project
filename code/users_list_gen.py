@@ -8,7 +8,7 @@ import random as rnd
 def cmd_parser():
     result = {}
     try:
-        p = arg.ArgumentParser(prog="user generator", usage="%(prog)s parameters", description="")
+        p = arg.ArgumentParser(prog="users_list_gen", usage="%(prog)s parameters", description="")
         p.add_argument(
             "--number",
             help="Output number. Must be provided",
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     if data and int_validator(data['nm']):
         nm = int(data['nm'])
         device_type = ['ANDROID', 'IOS', 'MacOS', 'LINUX', 'WINDOWS']
-        print('device_type,device_id,ip')
+        print('device_type|device_id|ip')
         while nm > 0:
-            print(','.join((rnd.choice(device_type), str(uuid.uuid4()), ip_generator())))
+            print('|'.join((rnd.choice(device_type), str(uuid.uuid4()), ip_generator())))
             nm = nm - 1
