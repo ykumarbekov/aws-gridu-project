@@ -24,6 +24,13 @@ echo "Finished"
 ######## Manually add rule for SSH local Access
 ######## Manually create role YKUMARBEKOV_EC2, Assign Policy: S3 BUCKET FULL ACCESS
 
+# Create Instance profile
+echo "Creating Instance Profile & Attaching ROLE..."
+aws iam delete-instance-profile --instance-profile-name ${USER}"-aws-course-profile" > /dev/null 2>&1
+aws iam create-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
+# Attach Role:
+aws iam add-role-to-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE}
+echo "Finished"
 # Create EC2 instance, Tag: ykumarbekov-gridu
 echo "Creating EC2 instance..."
 aws ec2 run-instances \
@@ -34,6 +41,11 @@ aws ec2 run-instances \
 --security-groups ${SG} \
 --user-data file://aws/configurator.sh \
 --tag-specification \
-'ResourceType=instance, Tags=[{Key=Name, Value='${USER}'-aws-course}]'
+'ResourceType=instance, Tags=[{Key=Name, Value='${USER}'-aws-course}]' > /dev/null 2>&1
 echo "Finished"
+
+# Associate Instance Profile
+# Get instance ID: aws ec2 describe-instances --filters "Name=tag-key,Values=${USER}"-aws-course-profile"
+# https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html
+# aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${USER}"-aws-course-profile" --instance-id i-012345678910abcde
 
