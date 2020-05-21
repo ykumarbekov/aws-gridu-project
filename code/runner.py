@@ -103,8 +103,8 @@ if __name__ == "__main__":
         reviews_list = get_data_list(data['reviews_list'], delimiter='|')
         v_list = []
         # Convert to JSON and save
-        view_log_fn_name = 'views.' + datetime.now().strftime("%d%m%Y%H%M%S") + '.logs'
-        review_log_fn_name = 'reviews.' + datetime.now().strftime("%d%m%Y%H%M%S") + '.logs'
+        view_log_fn_name = 'views.' + datetime.now().strftime("%d%m%Y%H%M%S") + '.log'
+        review_log_fn_name = 'reviews.' + datetime.now().strftime("%d%m%Y%H%M%S") + '.log'
         # *******
         with open(os.path.join(data['output_folder'], view_log_fn_name), 'w+') as view_log:
             while nm > 0:

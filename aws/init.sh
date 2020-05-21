@@ -62,7 +62,7 @@ echo "Finished"
 echo "Re-Creating Bucket and Folders: logs/views & logs/reviews"
 if aws s3api head-bucket --bucket $BUCKET 2>/dev/null
 then
-  aws s3api delete-bucket --bucket $BUCKET --force
+  aws s3 rb delete-bucket --bucket $BUCKET --force
 fi
 aws s3api create-bucket --bucket $BUCKET
 aws s3api put-object --bucket $BUCKET --key "logs/views/"
