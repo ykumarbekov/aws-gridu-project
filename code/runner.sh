@@ -3,11 +3,12 @@
 BUCKET="ykumarbekov-534348"
 EC2_LOGS="/opt/logs"
 TARGET_FOLDER="/logs"
+PROJECT_FOLDER="/opt/aws-gridu-project"
 
-python3 /opt/aws-gridu-project/code/runner.py \
---catalog=/opt/aws-gridu-project/catalog/books.csv \
---users_list=/opt/aws-gridu-project/user_data/users.csv \
---reviews=/opt/aws-gridu-project/user_data/reviews.csv \
+python3 $PROJECT_FOLDER/code/runner.py \
+--catalog=$PROJECT_FOLDER/catalog/books.csv \
+--users_list=$PROJECT_FOLDER/user_data/users.csv \
+--reviews=$PROJECT_FOLDER/user_data/reviews.csv \
 --output=$EC2_LOGS --timedelta=10 --number=10000
 
 for i in $(find $EC2_LOGS -type f -iname "*.log")
