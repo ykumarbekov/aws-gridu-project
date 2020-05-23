@@ -29,26 +29,29 @@ ROLE="YKUMARBEKOV_EC2"
 test ! -e ${AUTH_FOLDER} && echo "Folder ${AUTH_FOLDER} does not exist. Please create it before running script" && exit -1
 test ! -e ${AUTH_FOLDER}"/pwd.id" && echo "File pwd.id not found" && exit -1
 
-# Create security groups
+# Creating Security Groups
 echo "Creating Security Groups for EC2, RDS..."
-#aws ec2 create-security-group --group-name ${SG_EC2} --description "${USER} EC2 launch"
-#aws ec2 create-security-group --group-name ${SG_RDS} --description "${USER} RDS connections"
-######## Adding rules to Security Froups
-echo "Adding rules..."
-#aws ec2 authorize-security-group-ingress --group-name ${SG_EC2} --protocol tcp --port 22 --cidr 0.0.0.0/0
-#aws ec2 authorize-security-group-ingress --group-name ${SG_RDS} --protocol tcp --port 5432 --source-group ${SG_EC2}
+test -z $(aws ec2 describe-security-groups --group-names ${SG_EC2} \
+--output json --query SecurityGroups[0].GroupId 2>/dev/null) && aws ec2 create-security-group \
+--group-name ${SG_EC2} --description "${USER} EC2 launch" && \
+aws ec2 authorize-security-group-ingress --group-name ${SG_EC2} --protocol tcp --port 22 --cidr 0.0.0.0/0
+# ##########
+test -z $(aws ec2 describe-security-groups --group-names ${SG_RDS} \
+--output json --query SecurityGroups[0].GroupId 2>/dev/null) && aws ec2 create-security-group \
+--group-name ${SG_RDS} --description "${USER} RDS connections" && \
+aws ec2 authorize-security-group-ingress --group-name ${SG_RDS} --protocol tcp --port 5432 --source-group ${SG_EC2}
 echo "Finished"
 
 # Bucket creating
 echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config"
-#if aws s3api head-bucket --bucket $BUCKET 2>/dev/null
-#then
-#  aws s3 rb s3://$BUCKET --force
-#fi
-#aws s3api create-bucket --bucket $BUCKET
-#aws s3api put-object --bucket $BUCKET --key "logs/views/"
-#aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
-#aws s3api put-object --bucket $BUCKET --key "config/"
+if aws s3api head-bucket --bucket $BUCKET 2>/dev/null
+then
+  aws s3 rb s3://$BUCKET --force
+fi
+aws s3api create-bucket --bucket $BUCKET
+aws s3api put-object --bucket $BUCKET --key "logs/views/"
+aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
+aws s3api put-object --bucket $BUCKET --key "config/"
 echo "Finished"
 
 # Creating RDS: PostgreSQL
@@ -56,36 +59,38 @@ echo "Finished"
 RDS_USER=$(cat ${AUTH_FOLDER}"/pwd.id"|tr "\n" "|"|awk -F "|" '{ split($1,v," "); if (v[1]=="rds") { print v[2] }}')
 RDS_PWD=$(cat ${AUTH_FOLDER}"/pwd.id"|tr "\n" "|"|awk -F "|" '{ split($1,v," "); if (v[1]=="rds") { print v[3] }}')
 (test -z ${RDS_USER} || test -z ${RDS_PWD}) && echo "Empty RDS_USER or/and RDS_PWD" && exit -1
+
 SG_RDS_ID=$(aws ec2 describe-security-groups \
 --group-names ${SG_RDS} --output json --query SecurityGroups[0].GroupId|tr -d "\042")
 
 echo "Deleting RDS instance..."
-#aws rds delete-db-instance \
-#--db-instance-identifier rds-aws-${USER} \
-#--skip-final-snapshot \
-#--delete-automated-backups
-#aws rds wait db-instance-deleted --db-instance-identifier rds-aws-${USER}
+test ! -z $(aws rds describe-db-instances --db-instance-identifier rds-aws-${USER} --output json 2>/dev/null) && \
+aws rds delete-db-instance \
+--db-instance-identifier rds-aws-${USER} \
+--skip-final-snapshot \
+--delete-automated-backups
+aws rds wait db-instance-deleted --db-instance-identifier rds-aws-${USER}
 echo "Finished"
 
 echo "Creating RDS instance..."
-#aws rds create-db-instance \
-#--allocated-storage 20 --db-instance-class db.t2.micro \
-#--db-instance-identifier rds-aws-${USER} \
-#--db-name db1 \
-#--port 5432 \
-#--backup-retention-period 0 \
-#--vpc-security-group-ids ${SG_RDS_ID} \
-#--engine postgres \
-#--master-username ${RDS_USER} \
-#--master-user-password ${RDS_PWD} 1>/dev/null
+aws rds create-db-instance \
+--allocated-storage 20 --db-instance-class db.t2.micro \
+--db-instance-identifier rds-aws-${USER} \
+--db-name db1 \
+--port 5432 \
+--backup-retention-period 0 \
+--vpc-security-group-ids ${SG_RDS_ID} \
+--engine postgres \
+--master-username ${RDS_USER} \
+--master-user-password ${RDS_PWD} 1>/dev/null
 echo "Initializing..."
-#aws rds wait db-instance-available --db-instance-identifier rds-aws-${USER}
+aws rds wait db-instance-available --db-instance-identifier rds-aws-${USER}
 echo "Finished"
 
-#echo $(aws rds describe-db-instances \
-#--db-instance-identifier rds-aws-${USER} \
-#--output text \
-#--query DBInstances[0].Endpoint.Address)"|"${RDS_USER}"|"${RDS_PWD}|aws s3 cp - s3://${BUCKET}/config/rds.id
+echo $(aws rds describe-db-instances \
+--db-instance-identifier rds-aws-${USER} \
+--output text \
+--query DBInstances[0].Endpoint.Address)"|"${RDS_USER}"|"${RDS_PWD}|aws s3 cp - s3://${BUCKET}/config/rds.id
 
 # Create EC2 key pair
 echo "Creating EC2 key pair..."
@@ -119,10 +124,6 @@ aws ec2 wait instance-status-ok --instance-ids $InstanceID
 echo "Finished"
 
 # Associate Instance Profile
-# InstanceIdArray=$(aws ec2 describe-instances --output json \
-#--filters Name=tag-key,Values=Name Name=tag-value,Values=${USER}'-aws-course' \
-#--output text
-#--query 'to_string(Reservations[*].Instances[*].InstanceId)')
 echo "Associating Profile with Instance..."
 aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${USER}"-aws-course-profile" --instance-id $InstanceID
 echo "Finished"
