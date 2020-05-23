@@ -31,12 +31,12 @@ test ! -e ${AUTH_FOLDER}"/pwd.id" && echo "File pwd.id not found" && exit -1
 
 # Create security groups
 echo "Creating Security Groups for EC2, RDS..."
-aws ec2 create-security-group --group-name ${SG_EC2} --description "${USER} EC2 launch"
-aws ec2 create-security-group --group-name ${SG_RDS} --description "${USER} RDS connections"
+#aws ec2 create-security-group --group-name ${SG_EC2} --description "${USER} EC2 launch"
+#aws ec2 create-security-group --group-name ${SG_RDS} --description "${USER} RDS connections"
 ######## Adding rules to Security Froups
 echo "Adding rules..."
-aws ec2 authorize-security-group-ingress --group-name ${SG_EC2} --protocol tcp --port 22 --cidr 0.0.0.0/0
-aws ec2 authorize-security-group-ingress --group-name ${SG_RDS} --protocol tcp --port 5432 --source-group ${SG_EC2}
+#aws ec2 authorize-security-group-ingress --group-name ${SG_EC2} --protocol tcp --port 22 --cidr 0.0.0.0/0
+#aws ec2 authorize-security-group-ingress --group-name ${SG_RDS} --protocol tcp --port 5432 --source-group ${SG_EC2}
 echo "Finished"
 
 # Bucket creating
@@ -46,9 +46,9 @@ echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config"
 #  aws s3 rb s3://$BUCKET --force
 #fi
 #aws s3api create-bucket --bucket $BUCKET
-aws s3api put-object --bucket $BUCKET --key "logs/views/"
-aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
-aws s3api put-object --bucket $BUCKET --key "config/"
+#aws s3api put-object --bucket $BUCKET --key "logs/views/"
+#aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
+#aws s3api put-object --bucket $BUCKET --key "config/"
 echo "Finished"
 
 # Creating RDS: PostgreSQL
@@ -60,61 +60,62 @@ SG_RDS_ID=$(aws ec2 describe-security-groups \
 --group-names ${SG_RDS} --output json --query SecurityGroups[0].GroupId|tr -d "\042")
 
 echo "Deleting RDS instance..."
-aws rds delete-db-instance \
---db-instance-identifier rds-aws-${USER} \
---skip-final-snapshot \
---delete-automated-backups
+#aws rds delete-db-instance \
+#--db-instance-identifier rds-aws-${USER} \
+#--skip-final-snapshot \
+#--delete-automated-backups
+#aws rds wait db-instance-deleted --db-instance-identifier rds-aws-${USER}
 echo "Finished"
 
 echo "Creating RDS instance..."
-aws rds create-db-instance \
---allocated-storage 20 --db-instance-class db.t2.micro \
---db-instance-identifier rds-aws-${USER} \
---db-name db1 \
---port 5432 \
---backup-retention-period 0 \
---vpc-security-group-ids ${SG_RDS_ID} \
---engine postgres \
---master-username ${RDS_USER} \
---master-user-password ${RDS_PWD} 1>/dev/null
+#aws rds create-db-instance \
+#--allocated-storage 20 --db-instance-class db.t2.micro \
+#--db-instance-identifier rds-aws-${USER} \
+#--db-name db1 \
+#--port 5432 \
+#--backup-retention-period 0 \
+#--vpc-security-group-ids ${SG_RDS_ID} \
+#--engine postgres \
+#--master-username ${RDS_USER} \
+#--master-user-password ${RDS_PWD} 1>/dev/null
 echo "Initializing..."
-aws rds wait db-instance-available --db-instance-identifier rds-aws-${USER}
+#aws rds wait db-instance-available --db-instance-identifier rds-aws-${USER}
 echo "Finished"
 
-echo $(aws rds describe-db-instances \
---db-instance-identifier rds-aws-${USER} \
---output text \
---query DBInstances[0].Endpoint.Address)"|"${RDS_USER}"|"${RDS_PWD}|aws s3 cp - s3://${BUCKET}/config/rds.id
+#echo $(aws rds describe-db-instances \
+#--db-instance-identifier rds-aws-${USER} \
+#--output text \
+#--query DBInstances[0].Endpoint.Address)"|"${RDS_USER}"|"${RDS_PWD}|aws s3 cp - s3://${BUCKET}/config/rds.id
 
 # Create EC2 key pair
 echo "Creating EC2 key pair..."
-#aws ec2 delete-key-pair --key-name ${USER}"-aws-course" && rm -f ${AUTH_FOLDER}"/"${USER}"-aws-course.pem" > /dev/null 2>&1
-#aws ec2 create-key-pair --key-name ${USER}"-aws-course" --query 'KeyMaterial' --output text  > ${AUTH_FOLDER}"/"${USER}"-aws-course.pem"
-#chmod 400 ${AUTH_FOLDER}"/"${USER}"-aws-course.pem"
+aws ec2 delete-key-pair --key-name ${USER}"-aws-course" && rm -f ${AUTH_FOLDER}"/"${USER}"-aws-course.pem" > /dev/null 2>&1
+aws ec2 create-key-pair --key-name ${USER}"-aws-course" --query 'KeyMaterial' --output text  > ${AUTH_FOLDER}"/"${USER}"-aws-course.pem"
+chmod 400 ${AUTH_FOLDER}"/"${USER}"-aws-course.pem"
 echo "Finished"
 
 # Create Instance profile
 echo "Creating Instance Profile & Attaching ROLE..."
-#aws iam remove-role-from-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE}
-#aws iam delete-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
-#aws iam create-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
+aws iam remove-role-from-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE}
+aws iam delete-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
+aws iam create-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
 # Attach Role:
-#aws iam add-role-to-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE}
+aws iam add-role-to-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE}
 echo "Finished"
 # Create EC2 instance
 echo "Creating EC2 instance..."
-#InstanceID=$(aws ec2 run-instances \
-#--image-id ami-0915e09cc7ceee3ab \
-#--count 1 \
-#--instance-type t2.micro \
-#--key-name ${USER}"-aws-course" \
-#--security-groups ${SG_EC2} \
-#--user-data file://aws/configurator.sh \
-#--tag-specification \
-#'ResourceType=instance, Tags=[{Key=Name, Value='${USER}'-aws-course}]' \
-#--query 'Instances[*].InstanceId')
+InstanceID=$(aws ec2 run-instances \
+--image-id ami-0915e09cc7ceee3ab \
+--count 1 \
+--instance-type t2.micro \
+--key-name ${USER}"-aws-course" \
+--security-groups ${SG_EC2} \
+--user-data file://aws/configurator.sh \
+--tag-specification \
+'ResourceType=instance, Tags=[{Key=Name, Value='${USER}'-aws-course}]' \
+--query 'Instances[*].InstanceId')
 echo "Initializing..."
-#aws ec2 wait instance-status-ok --instance-ids $InstanceID
+aws ec2 wait instance-status-ok --instance-ids $InstanceID
 echo "Finished"
 
 # Associate Instance Profile
@@ -123,5 +124,5 @@ echo "Finished"
 #--output text
 #--query 'to_string(Reservations[*].Instances[*].InstanceId)')
 echo "Associating Profile with Instance..."
-#aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${USER}"-aws-course-profile" --instance-id $InstanceID
+aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${USER}"-aws-course-profile" --instance-id $InstanceID
 echo "Finished"
