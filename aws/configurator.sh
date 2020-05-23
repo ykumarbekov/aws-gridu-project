@@ -9,7 +9,7 @@ mkdir /opt/logs
 chmod +x /opt/aws-gridu-project/code/runner.sh
 chmod +x /opt/aws-gridu-project/aws/rds_init.sh
 echo "*/30 * * * * /opt/aws-gridu-project/code/runner.sh" > /tmp/usrcrontab
-echo "*/5 * * * * /opt/aws-gridu-project/aws/rds_init.sh" >> /tmp/usrcrontab
+echo "*/5 * * * * /opt/aws-gridu-project/aws/rds_init.sh >> /opt/rds_init.log" >> /tmp/usrcrontab
 crontab /tmp/usrcrontab
 
 
