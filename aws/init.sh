@@ -18,7 +18,6 @@ export AWS_DEFAULT_REGION="us-east-1"
 ###### Must be manually updated according with your values
 USER="ykumarbekov"
 AUTH_FOLDER="./auth"
-CATALOG="./catalog"
 SG_EC2="yk-ec2-534348"
 SG_RDS="yk-rds-534348"
 BUCKET="ykumarbekov-534348"
@@ -43,7 +42,7 @@ aws ec2 authorize-security-group-ingress --group-name ${SG_RDS} --protocol tcp -
 echo "Finished"
 
 # Bucket creating
-echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config"
+echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config; emr/[logs]"
 if aws s3api head-bucket --bucket $BUCKET 2>/dev/null
 then
   aws s3 rb s3://$BUCKET --force
@@ -52,6 +51,8 @@ aws s3api create-bucket --bucket $BUCKET
 aws s3api put-object --bucket $BUCKET --key "logs/views/"
 aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
 aws s3api put-object --bucket $BUCKET --key "config/"
+aws s3api put-object --bucket $BUCKET --key "emr/logs/"
+aws s3 cp aws/fraud_ip_job.py s3://$BUCKET/emr/code/
 echo "Finished"
 
 # Creating RDS: PostgreSQL
@@ -126,4 +127,15 @@ echo "Finished"
 # Associate Instance Profile
 echo "Associating Profile with Instance..."
 aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${USER}"-aws-course-profile" --instance-id $InstanceID
+echo "Finished"
+
+echo "Creating DynamoDB table..."
+test -z $(aws dynamodb describe-table --table-name fraud-ip-${USER} --output json \
+--query Table.TableName 2>/dev/null) && aws dynamodb create-table \
+--table-name fraud-ip-${USER} \
+--attribute-definitions AttributeName=ip,AttributeType=S \
+--key-schema AttributeName=ip,KeyType=HASH \
+--provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 1>/dev/null
+echo "Initializing..."
+aws dynamodb wait table-exists --table-name fraud-ip-${USER}
 echo "Finished"
