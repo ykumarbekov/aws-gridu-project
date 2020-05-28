@@ -10,6 +10,7 @@ AUTH_FOLDER="./auth"
 SG_EC2="yk-ec2-534348"
 BUCKET="ykumarbekov-534348"
 ROLE="YKUMARBEKOV_EC2"
+TABLE="fraud-ip-"${USER}
 #############################################
 
 # Check auth folder and password file
@@ -53,13 +54,19 @@ DNS=$(aws ec2 describe-instances --output text \
 --filters Name=tag-key,Values=Name Name=tag-value,Values=${USER}-aws-course-emr \
 --query 'Reservations[*].Instances[*].PublicDnsName')
 
-echo ${DNS}
-
+# echo ${DNS}
 # Running Spark job
-#ssh ec2-user@${DNS} -i ${AUTH_FOLDER}"/"${USER}"-aws-course-emr.pem" \
-#'/opt/spark-2.4.5/bin/spark-submit \
-#--packages com.amazonaws:aws-java-sdk-pom:1.10.34,org.apache.hadoop:hadoop-aws:2.6.0 \
-#/opt/pyspark_example.py s3a://ykumarbekov-534348/logs/views/' fraud-ip-${USER} 1>/dev/null
+echo "Running Spark Job..."
+ssh -o StrictHostKeyChecking=no \
+ec2-user@${DNS} -i ${AUTH_FOLDER}"/"${USER}"-aws-course-emr.pem" \
+"/opt/spark-2.4.5/bin/spark-submit
+--packages com.amazonaws:aws-java-sdk-pom:1.10.34,org.apache.hadoop:hadoop-aws:2.6.0
+/opt/aws-gridu-project/aws/emr/fraud_ip_job_ec2.py s3a://${BUCKET}/logs/views/ s3a://${BUCKET}/emr/result/fraud_ip/"
+echo "Finished"
 
+# Uploading Spark result to DynamoDB
+echo "Uploading to DynamoDB..."
+python3 aws/emr/csv2dynamodb.py --bucket ${BUCKET} --input-key emr/result/ip_fraud --table ${TABLE}
+echo "Finished"
 
 

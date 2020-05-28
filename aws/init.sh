@@ -3,7 +3,9 @@
 #############################################
 # Script for Initializing AWS Infructure for Big Data course
 # 1. Be sure you installed AWS CLI and configured AWS_PROFILE: aws-gridu
-# 2. Manually create IAM ROLES: {USER_NAME}_EC2, Assign Policy: S3 BUCKET FULL ACCESS
+# 2. Manually create IAM ROLES: {USER_NAME}_EC2, Assign Policies:
+#    - S3 BUCKET FULL ACCESS
+#    - AmazonDynamoDBFullAccess
 # 3. Edit script variables, according with your values
 # 4. Create folder: auth, add file pwd.id (this file contains necessary logins and passwords)
 #    Rules for pwd.id:

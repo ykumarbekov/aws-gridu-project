@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import argparse as arg
 import boto3
-import time
 
 
 def cmd_parser():
@@ -39,17 +38,13 @@ def cmd_parser():
 
 def get_matching_s3_keys(s3_, bucket_, prefix='', suffix=''):
     kwargs = {'Bucket': bucket_}
-    # f_status = False
-    n = 0
     if isinstance(prefix, str):
         kwargs['Prefix'] = prefix
     while True:
         # The S3 API response is a large blob of metadata.
         # 'Contents' contains information about the listed objects.
         resp = s3.list_objects_v2(**kwargs)
-        # print(resp)
         if 'Contents' in resp:
-            # f_status = True
             for obj_ in resp['Contents']:
                 key_ = obj_['Key']
                 if key_.startswith(prefix) and key_.endswith(suffix):
@@ -60,12 +55,7 @@ def get_matching_s3_keys(s3_, bucket_, prefix='', suffix=''):
         try:
             kwargs['ContinuationToken'] = resp['NextContinuationToken']
         except KeyError:
-            # if f_status and n == 3:
             break
-            # else:
-            #    n = n + 1
-            #    time.sleep(5)
-            #    print(f"Sleep: {n} time")
 
 
 if __name__ == "__main__":

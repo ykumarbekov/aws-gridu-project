@@ -13,18 +13,18 @@ TABLE="fraud-ip-"${USER}
 #############################################
 
 echo "Creating EMR Cluster..."
-#clusterID=$(aws emr create-cluster \
-#--name "test-emr-cluster" \
-#--release-label emr-5.30.0 \
-#--instance-groups InstanceGroupType=MASTER,InstanceCount=1,InstanceType=${INSTANCE_TYPE} InstanceGroupType=CORE,\
-#InstanceCount=${INSTANCE_CORE_CNT},InstanceType=${INSTANCE_TYPE} \
-#--applications Name=Spark Name=Zeppelin \
-#--use-default-roles \
-#--log-uri s3://${BUCKET}/emr/logs/ \
-#--output json \
-#--query 'ClusterId'|tr -d "\042")
+clusterID=$(aws emr create-cluster \
+--name "test-emr-cluster" \
+--release-label emr-5.30.0 \
+--instance-groups InstanceGroupType=MASTER,InstanceCount=1,InstanceType=${INSTANCE_TYPE} InstanceGroupType=CORE,\
+InstanceCount=${INSTANCE_CORE_CNT},InstanceType=${INSTANCE_TYPE} \
+--applications Name=Spark Name=Zeppelin \
+--use-default-roles \
+--log-uri s3://${BUCKET}/emr/logs/ \
+--output json \
+--query 'ClusterId'|tr -d "\042")
 echo "Initializing..."
-#aws emr wait cluster-running --cluster-id ${clusterID}
+aws emr wait cluster-running --cluster-id ${clusterID}
 echo "Finished"
 
 echo "Adding Spark job..."
@@ -51,8 +51,8 @@ echo "Finished"
 
 # Terminating cluster
 echo "Terminating cluster..."
-#aws emr terminate-clusters --cluster-ids ${clusterID}
-#aws emr wait cluster-terminated --cluster-id ${clusterID}
+aws emr terminate-clusters --cluster-ids ${clusterID}
+aws emr wait cluster-terminated --cluster-id ${clusterID}
 echo "Finished"
 
 
