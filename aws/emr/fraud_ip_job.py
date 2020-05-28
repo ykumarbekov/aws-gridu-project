@@ -1,7 +1,8 @@
-from __future__ import print_function
 import sys
+import boto3
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import *
+from pyspark.sql.functions import count, col
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
@@ -13,14 +14,21 @@ if __name__ == "__main__":
     spark = SparkSession.builder.appName('Fraud-ip-job').getOrCreate()
     df = spark.read.format("json").load(inp)
     df1 = df.groupBy("timestamp", "ip").agg(count("ip").alias("ip_count"))
+    df2 = df1.filter(col("ip_count") >= 5).select("ip").distinct()
     df1\
-        .filter(col("ip_count") >= 5)\
-        .select("ip")\
-        .distinct()\
+        .filter(col("ip_count") >= 5).select("ip").distinct()\
+        .coalesce(1)\
         .write\
         .format("csv")\
         .mode('overwrite')\
-        .option("path", out_p)\
-        .save()
+        .save(out_p)
+
+    from pyspark.sql import Row
+    # rdd = spark.sparkContext.parallelize(["msg 1", "msg 2"])
+    # rdd.saveAsTextFile(out_p)
     # ***********
+    # dynamodb = boto3.resource('dynamodb')
+    # ddb_table = dynamodb.Table(table)
+    # for ip in ip_list: ddb_table.put_item(Item={'ip': ip})
+
 
