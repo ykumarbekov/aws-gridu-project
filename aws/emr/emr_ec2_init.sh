@@ -14,7 +14,6 @@ ROLE="YKUMARBEKOV_EC2"
 
 # Check auth folder and password file
 test ! -e ${AUTH_FOLDER} && echo "Folder ${AUTH_FOLDER} does not exist. Please create it before running script" && exit -1
-test ! -e ${AUTH_FOLDER}"/pwd.id" && echo "File pwd.id not found" && exit -1
 
 # Test if not exists - create Security Group
 echo "Creating Security Group for EC2..."
@@ -44,6 +43,23 @@ InstanceID=$(aws ec2 run-instances \
 echo "Initializing..."
 aws ec2 wait instance-status-ok --instance-ids $InstanceID
 echo "Finished"
+
+# Associate Instance Profile
+echo "Associating Profile with Instance..."
+aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${USER}"-aws-course-profile" --instance-id $InstanceID
+echo "Finished"
+
+DNS=$(aws ec2 describe-instances --output text \
+--filters Name=tag-key,Values=Name Name=tag-value,Values=${USER}-aws-course-emr \
+--query 'Reservations[*].Instances[*].PublicDnsName')
+
+echo ${DNS}
+
+# Running Spark job
+#ssh ec2-user@${DNS} -i ${AUTH_FOLDER}"/"${USER}"-aws-course-emr.pem" \
+#'/opt/spark-2.4.5/bin/spark-submit \
+#--packages com.amazonaws:aws-java-sdk-pom:1.10.34,org.apache.hadoop:hadoop-aws:2.6.0 \
+#/opt/pyspark_example.py s3a://ykumarbekov-534348/logs/views/' fraud-ip-${USER} 1>/dev/null
 
 
 
