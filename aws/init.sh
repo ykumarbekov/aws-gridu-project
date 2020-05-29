@@ -54,7 +54,7 @@ aws s3api put-object --bucket $BUCKET --key "logs/views/"
 aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
 aws s3api put-object --bucket $BUCKET --key "config/"
 aws s3api put-object --bucket $BUCKET --key "emr/logs/"
-aws s3 cp aws/fraud_ip_job.py s3://$BUCKET/emr/code/
+aws s3 cp aws/emr/fraud_ip_job_ec2.py s3://$BUCKET/emr/code/
 echo "Finished"
 
 # Creating RDS: PostgreSQL

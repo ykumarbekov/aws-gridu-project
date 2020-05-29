@@ -35,7 +35,7 @@ Args=[--deploy-mode,cluster,--master,yarn,\
 --num-executors,2,\
 --executor-cores,2,\
 --executor-memory,4g,\
-s3://${BUCKET}/emr/code/fraud_ip_job.py,\
+s3://${BUCKET}/emr/code/fraud_ip_job_ec2.py,\
 s3://${BUCKET}/logs/views/,\
 s3://${BUCKET}/emr/result/],\
 ActionOnFailure=CONTINUE)
