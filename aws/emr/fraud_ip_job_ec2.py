@@ -31,7 +31,7 @@ if __name__ == "__main__":
     #    .mode('overwrite')\
     #    .save(out_p)
     # ###################################
-    dynamodb = boto3.resource('dynamodb')
+    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     ddb_table = dynamodb.Table(table)
     for ip in ip_list:
         ddb_table.put_item(Item={'ip': ip})
