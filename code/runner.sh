@@ -2,6 +2,7 @@
 
 BUCKET="ykumarbekov-534348"
 EC2_LOGS="/opt/logs"
+KINESIS_LOGS="/opt/logs_kinesis"
 TARGET_FOLDER="/logs"
 PROJECT_FOLDER="/opt/aws-gridu-project"
 
@@ -15,12 +16,14 @@ python3 $PROJECT_FOLDER/code/runner.py \
 --reviews=$PROJECT_FOLDER/user_data/reviews.csv \
 --output=$EC2_LOGS --timedelta=10 --number=10000
 
-# Move LOGS to S3 BUCKET
+# Move/copy LOGS to S3 BUCKET and KINESIS_LOGS
 for i in $(find $EC2_LOGS -type f -iname "*.log")
 do
   t1=$(basename -- $i)
   folder=${t1%%.*}
   target=${TARGET_FOLDER}"/"${folder}"/"${t1#*.}
+  kinesis_log=${KINESIS_LOGS}"/"${t1#*.}
+  if [ ${folder} == "views" ]; then; cp $i ${kinesis_log}; fi
   aws s3 mv $i s3://${BUCKET}${target}
 done
 

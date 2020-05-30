@@ -47,14 +47,14 @@ echo "Finished"
 
 # Associate Instance Profile
 echo "Associating Profile with Instance..."
-aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${USER}"-aws-course-profile" --instance-id $InstanceID
+#aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${USER}"-aws-course-profile" --instance-id $InstanceID
 echo "Finished"
 
 DNS=$(aws ec2 describe-instances --output text \
 --filters Name=tag-key,Values=Name Name=tag-value,Values=${USER}-aws-course-emr \
 --query 'Reservations[*].Instances[*].PublicDnsName')
 
-# echo ${DNS}
+echo ${DNS}
 # Running Spark job
 echo "Running Spark Job..."
 ssh -o StrictHostKeyChecking=no \
@@ -64,14 +64,7 @@ ec2-user@${DNS} -i ${AUTH_FOLDER}"/"${USER}"-aws-course-emr.pem" \
 /opt/aws-gridu-project/aws/emr/fraud_ip_job_ec2.py s3a://${BUCKET}/logs/views/ ${TABLE}" > /dev/null 2>&1
 echo "Finished"
 
-# Uploading Spark result to DynamoDB
-echo "Uploading to DynamoDB..."
-# python3 aws/emr/csv2dynamodb.py --bucket ${BUCKET} --input-key emr/result/fraud_ip --table ${TABLE}
-echo "Finished"
-
 echo "Terminating EC2 instance..."
-# aws ec2 terminate-instances --instance-ids $InstanceID
-# aws ec2 wait instance-terminated --instance-ids $InstanceID
+ aws ec2 terminate-instances --instance-ids $InstanceID
+ aws ec2 wait instance-terminated --instance-ids $InstanceID
 echo "Finished"
-
-## s3a://${BUCKET}/emr/result/fraud_ip/

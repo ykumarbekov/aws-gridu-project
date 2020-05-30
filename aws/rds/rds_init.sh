@@ -13,7 +13,7 @@ export PGPASSWORD=$(cat /opt/rds.id|cut -f 3 -d '|')
 export PGDATABASE="db1"
 export PGPORT=5432
 # #####################
-psql -h $ENDPOINT -w -f ${PROJECT_FOLDER}/aws/rds_catalog_table.sql
+psql -h $ENDPOINT -w -f ${PROJECT_FOLDER}/aws/rds/rds_catalog_table.sql
 export Q="copy catalog from stdin with delimiter as '|' NULL As '' CSV HEADER"
 cat ${PROJECT_FOLDER}/catalog/books.csv | psql -h $ENDPOINT -w -c "${Q}"
 # #####################

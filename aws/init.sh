@@ -3,9 +3,7 @@
 #############################################
 # Script for Initializing AWS Infructure for Big Data course
 # 1. Be sure you installed AWS CLI and configured AWS_PROFILE: aws-gridu
-# 2. Manually create IAM ROLES: {USER_NAME}_EC2, Assign Policies:
-#    - S3 BUCKET FULL ACCESS
-#    - AmazonDynamoDBFullAccess
+# 2. Manually create IAM ROLES: {USER_NAME}_EC2, Assign Policies
 # 3. Edit script variables, according with your values
 # 4. Create folder: auth, add file pwd.id (this file contains necessary logins and passwords)
 #    Rules for pwd.id:
@@ -24,6 +22,7 @@ SG_EC2="yk-ec2-534348"
 SG_RDS="yk-rds-534348"
 BUCKET="ykumarbekov-534348"
 ROLE="YKUMARBEKOV_EC2"
+KINESIS_DSTREAM={USER}"-dstream"
 #############################################
 
 # Check auth folder and password file
@@ -45,16 +44,16 @@ echo "Finished"
 
 # Bucket creating
 echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config; emr/[logs]"
-if aws s3api head-bucket --bucket $BUCKET 2>/dev/null
-then
-  aws s3 rb s3://$BUCKET --force
-fi
-aws s3api create-bucket --bucket $BUCKET
-aws s3api put-object --bucket $BUCKET --key "logs/views/"
-aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
-aws s3api put-object --bucket $BUCKET --key "config/"
-aws s3api put-object --bucket $BUCKET --key "emr/logs/"
-aws s3 cp aws/emr/fraud_ip_job_ec2.py s3://$BUCKET/emr/code/
+#if aws s3api head-bucket --bucket $BUCKET 2>/dev/null
+#then
+#  aws s3 rb s3://$BUCKET --force
+#fi
+#aws s3api create-bucket --bucket $BUCKET
+#aws s3api put-object --bucket $BUCKET --key "logs/views/"
+#aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
+#aws s3api put-object --bucket $BUCKET --key "config/"
+#aws s3api put-object --bucket $BUCKET --key "emr/logs/"
+#aws s3 cp aws/emr/fraud_ip_job_ec2.py s3://$BUCKET/emr/code/
 echo "Finished"
 
 # Creating RDS: PostgreSQL
@@ -140,4 +139,12 @@ test -z $(aws dynamodb describe-table --table-name fraud-ip-${USER} --output jso
 --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 1>/dev/null
 echo "Initializing..."
 aws dynamodb wait table-exists --table-name fraud-ip-${USER}
+echo "Finished"
+
+echo "Creating Kinesis Stream..."
+test -z $(aws kinesis describe-stream --stream-name ykumarbekov-dstream \
+--output text --query StreamDescription.StreamName 2>/dev/null) && \
+aws kinesis create-stream --stream-name ${KINESIS_DSTREAM} --shard-count 2 1>/dev/null
+echo "Initializing..."
+aws kinesis wait stream-exists --stream-name ${KINESIS_DSTREAM}
 echo "Finished"
