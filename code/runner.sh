@@ -23,7 +23,7 @@ do
   folder=${t1%%.*}
   target=${TARGET_FOLDER}"/"${folder}"/"${t1#*.}
   kinesis_log=${KINESIS_LOGS}"/"${t1#*.}
-  if [ ${folder} == "views" ]; then; cp $i ${kinesis_log}; fi
+  if [ ${folder} == "views" ]; then cp $i ${kinesis_log}; fi
   aws s3 mv $i s3://${BUCKET}${target}
 done
 

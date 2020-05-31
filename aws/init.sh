@@ -22,7 +22,7 @@ SG_EC2="yk-ec2-534348"
 SG_RDS="yk-rds-534348"
 BUCKET="ykumarbekov-534348"
 ROLE="YKUMARBEKOV_EC2"
-KINESIS_DSTREAM={USER}"-dstream"
+KINESIS_DSTREAM=${USER}"-dstream"
 #############################################
 
 # Check auth folder and password file
@@ -141,10 +141,13 @@ echo "Initializing..."
 aws dynamodb wait table-exists --table-name fraud-ip-${USER}
 echo "Finished"
 
-echo "Creating Kinesis Stream..."
-test -z $(aws kinesis describe-stream --stream-name ykumarbekov-dstream \
+echo "Re-creating Kinesis Stream..."
+test ! -z $(aws kinesis describe-stream --stream-name ykumarbekov-dstream \
 --output text --query StreamDescription.StreamName 2>/dev/null) && \
-aws kinesis create-stream --stream-name ${KINESIS_DSTREAM} --shard-count 2 1>/dev/null
+echo "Deleting..." && \
+aws kinesis delete-stream --stream-name ${KINESIS_DSTREAM} --enforce-consumer-deletion
+aws kinesis wait stream-not-exists --stream-name ${KINESIS_DSTREAM}
 echo "Initializing..."
+aws kinesis create-stream --stream-name ${KINESIS_DSTREAM} --shard-count 10 1>/dev/null
 aws kinesis wait stream-exists --stream-name ${KINESIS_DSTREAM}
 echo "Finished"
