@@ -3,12 +3,7 @@
     "Statement": [
         {
             "Effect": "Allow",
-            "Action": [
-                "kinesis:DescribeStream",
-                "kinesis:GetShardIterator",
-                "kinesis:GetRecords",
-                "kinesis:ListShards"
-            ],
+            "Action": "kinesis:*",
             "Resource": "*"
         }
     ]
