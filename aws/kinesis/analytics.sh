@@ -10,6 +10,7 @@ KINESIS_INPUT_DSTREAM=${USER}"-dstream-in"
 KINESIS_OUTPUT_DSTREAM=${USER}"-dstream-out"
 KINESIS_ANALYTICS=${USER}"-analytics"
 ROLE="yk-project-analytics"
+TRIGGER_OUT_NAME = "TRIGGER_TOP_VIEWS_100"
 #############################################
 
 echo "Creating role..."
@@ -54,7 +55,7 @@ aws kinesisanalytics create-application --application-name ${KINESIS_ANALYTICS} 
 CREATE OR REPLACE PUMP \"TOP_VIEWS_BOOKS_PUMP\" AS INSERT INTO \"TOP_VIEWS_BOOKS\" \
 SELECT STREAM * \
 FROM TABLE (TOP_K_ITEMS_TUMBLING(CURSOR(SELECT STREAM * FROM \"SOURCE_SQL_STREAM_001\"),'ISBN',10,60)); \
-CREATE OR REPLACE STREAM \"TRIGGER_TOP_VIEWS_100\" (ISBN VARCHAR(16), HITS BIGINT); \
+CREATE OR REPLACE STREAM \"${TRIGGER_OUT_NAME}\" (ISBN VARCHAR(16), HITS BIGINT); \
 CREATE OR REPLACE PUMP \"TRIGGER_TOP_VIEWS_100_PUMP\" AS INSERT INTO \"TRIGGER_TOP_VIEWS_100\" \
 SELECT STREAM ISBN, HITS FROM (SELECT ISBN, MOST_FREQUENT_VALUES as HITS FROM \"TOP_VIEWS_BOOKS\") WHERE HITS>=100;"
 echo "Finished"
@@ -79,6 +80,6 @@ aws kinesisanalytics add-application-output \
 --application-name ${KINESIS_ANALYTICS} \
 --current-application-version-id 2 \
 --application-output \
-"{\"Name\":\"DEST_STREAM\",\"KinesisStreamsOutput\":{\"ResourceARN\":\"${res_output_arn}\",\"RoleARN\":\"${role_arn}\"}, \
+"{\"Name\":\"${TRIGGER_OUT_NAME}\",\"KinesisStreamsOutput\":{\"ResourceARN\":\"${res_output_arn}\",\"RoleARN\":\"${role_arn}\"}, \
 \"DestinationSchema\":{\"RecordFormatType\":\"JSON\"}}"
 echo "Finished"

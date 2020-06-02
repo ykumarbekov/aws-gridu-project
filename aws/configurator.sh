@@ -1,7 +1,7 @@
 #!/bin/bash
 
 USER="ykumarbekov"
-KINESIS_DSTREAM=${USER}"-dstream"
+KINESIS_DSTREAM=${USER}"-dstream-in"
 
 yum update -y
 yum install python36 -y

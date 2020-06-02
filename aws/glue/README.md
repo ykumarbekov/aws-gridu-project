@@ -1,6 +1,11 @@
-Task: Filter data from blocked IPs via Glue and store into S3 bucket.  
-Sources: 1) Dynamodb table; 2) s3:/${BUCKET}/logs/views/  
-Output folder: s3://{BUCKET}/glue/target/  
+AWS Glue  
+Task:   
+- Filter data from blocked IPs via Glue and store into S3 bucket.  
+  Sources:   
+  - Dynamodb table  
+  - s3:/{BUCKET}/logs/views/  
+  - Output folder: s3://{BUCKET}/glue/target/  
+----
 Steps:
 1. Create role: {USER}_glue:  
    Add policies: See folder: roles/policies - glue_access.json, dynamo_access.json        
