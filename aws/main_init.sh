@@ -43,7 +43,7 @@ aws ec2 authorize-security-group-ingress --group-name ${SG_RDS} --protocol tcp -
 echo "Finished"
 
 # Bucket creating
-echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config; emr/[logs]; athena/result"
+echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config; emr/logs; athena/[result/manifest]"
 #if aws s3api head-bucket --bucket $BUCKET 2>/dev/null; then
 #  aws s3 rb s3://$BUCKET --force
 #fi
@@ -53,6 +53,7 @@ echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config; emr/[logs];
 #aws s3api put-object --bucket $BUCKET --key "config/"
 #aws s3api put-object --bucket $BUCKET --key "emr/logs/"
 #aws s3api put-object --bucket $BUCKET --key "athena/result/"
+#aws s3api put-object --bucket $BUCKET --key "athena/manifest/"
 #aws s3 cp aws/emr/fraud_ip_job_ec2.py s3://$BUCKET/emr/code/
 echo "Finished"
 

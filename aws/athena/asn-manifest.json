@@ -1,0 +1,22 @@
+{
+    "fileLocations": [
+        {
+            "URIs": [
+                "https://ykumarbekov-534348.s3.amazonaws.com/athena/result/a3b23669-cc69-4a97-8f1b-6a171f499aec.csv"
+            ]
+        },
+        {
+            "URIPrefixes": [
+                "prefix1",
+                "prefix2",
+                "prefix3"
+            ]
+        }
+    ],
+    "globalUploadSettings": {
+        "format": "CSV",
+        "delimiter": ",",
+        "textqualifier": "\"",
+        "containsHeader": "true"
+    }
+}
