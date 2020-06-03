@@ -43,9 +43,8 @@ aws ec2 authorize-security-group-ingress --group-name ${SG_RDS} --protocol tcp -
 echo "Finished"
 
 # Bucket creating
-echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config; emr/[logs]"
-#if aws s3api head-bucket --bucket $BUCKET 2>/dev/null
-#then
+echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config; emr/[logs]; athena/result"
+#if aws s3api head-bucket --bucket $BUCKET 2>/dev/null; then
 #  aws s3 rb s3://$BUCKET --force
 #fi
 #aws s3api create-bucket --bucket $BUCKET
@@ -53,6 +52,7 @@ echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config; emr/[logs]"
 #aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
 #aws s3api put-object --bucket $BUCKET --key "config/"
 #aws s3api put-object --bucket $BUCKET --key "emr/logs/"
+#aws s3api put-object --bucket $BUCKET --key "athena/result/"
 #aws s3 cp aws/emr/fraud_ip_job_ec2.py s3://$BUCKET/emr/code/
 echo "Finished"
 
@@ -63,7 +63,7 @@ RDS_PWD=$(cat ${AUTH_FOLDER}"/pwd.id"|tr "\n" "|"|awk -F "|" '{ split($1,v," ");
 (test -z ${RDS_USER} || test -z ${RDS_PWD}) && echo "Empty RDS_USER or/and RDS_PWD" && exit -1
 
 SG_RDS_ID=$(aws ec2 describe-security-groups \
---group-names ${SG_RDS} --output json --query SecurityGroups[0].GroupId|tr -d "\042")
+--group-names ${SG_RDS} --output text --query SecurityGroups[0].GroupId)
 
 echo "Deleting RDS instance..."
 test ! -z $(aws rds describe-db-instances --db-instance-identifier rds-aws-${USER} --output json 2>/dev/null) && \
