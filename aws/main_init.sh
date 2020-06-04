@@ -3,26 +3,27 @@
 #############################################
 # Script for Initializing AWS Infructure for Big Data course
 # 1. Be sure you installed AWS CLI and configured AWS_PROFILE: aws-gridu
-# 2. Manually create IAM ROLES: {USER_NAME}_EC2, Assign Policies
-# 3. Edit script variables, according with your values
-# 4. Create folder: auth, add file pwd.id (this file contains necessary logins and passwords)
-#    Rules for pwd.id:
+# 2. Edit Variables, set it up according with your values
+# 3. Perform next steps:
+#    cd {cloned project} // Example: cd aws-project
+#    - Create folder inside the project: mkdir ./auth,
+#    - Add file: touch ./auth/pwd.id  // this file contains necessary logins and passwords //
+#    Fill up pwd.id, follow next rules:
 #    - Every row contains information in the columns: 1st: service type; 2nd: username; 3rd: password
 #    - Example: rds user password
 #############################################
 
+###### Must be manually updated according with your values
 export AWS_PROFILE="aws-gridu"
 export AWS_DEFAULT_OUTPUT="text"
 export AWS_DEFAULT_REGION="us-east-1"
 
-###### Must be manually updated according with your values
 USER="ykumarbekov"
 AUTH_FOLDER="./auth"
 SG_EC2="yk-ec2-534348"
 SG_RDS="yk-rds-534348"
 BUCKET="ykumarbekov-534348"
-ROLE="YKUMARBEKOV_EC2"
-KINESIS_DSTREAM=${USER}"-dstream"
+ROLE_EC2="YKUMARBEKOV_EC2"
 #############################################
 
 # Check auth folder and password file
@@ -44,17 +45,17 @@ echo "Finished"
 
 # Bucket creating
 echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config; emr/logs; athena/[result/manifest]"
-#if aws s3api head-bucket --bucket $BUCKET 2>/dev/null; then
-#  aws s3 rb s3://$BUCKET --force
-#fi
-#aws s3api create-bucket --bucket $BUCKET
-#aws s3api put-object --bucket $BUCKET --key "logs/views/"
-#aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
-#aws s3api put-object --bucket $BUCKET --key "config/"
-#aws s3api put-object --bucket $BUCKET --key "emr/logs/"
-#aws s3api put-object --bucket $BUCKET --key "athena/result/"
-#aws s3api put-object --bucket $BUCKET --key "athena/manifest/"
-#aws s3 cp aws/emr/fraud_ip_job_ec2.py s3://$BUCKET/emr/code/
+if aws s3api head-bucket --bucket $BUCKET 2>/dev/null; then
+  aws s3 rb s3://$BUCKET --force
+fi
+aws s3api create-bucket --bucket $BUCKET
+aws s3api put-object --bucket $BUCKET --key "logs/views/"
+aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
+aws s3api put-object --bucket $BUCKET --key "config/"
+aws s3api put-object --bucket $BUCKET --key "emr/logs/"
+aws s3api put-object --bucket $BUCKET --key "athena/result/"
+aws s3api put-object --bucket $BUCKET --key "athena/manifest/"
+aws s3 cp aws/emr/fraud_ip_job_ec2.py s3://$BUCKET/emr/code/
 echo "Finished"
 
 # Creating RDS: PostgreSQL
@@ -103,12 +104,12 @@ chmod 400 ${AUTH_FOLDER}"/"${USER}"-aws-course.pem"
 echo "Finished"
 
 # Create Instance profile
-echo "Creating Instance Profile & Attaching ROLE..."
-aws iam remove-role-from-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE}
+echo "Creating Instance Profile & Attaching ROLE_EC2..."
+aws iam remove-role-from-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE_EC2}
 aws iam delete-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
 aws iam create-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
 # Attach Role:
-aws iam add-role-to-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE}
+aws iam add-role-to-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE_EC2}
 echo "Finished"
 # Create EC2 instance
 echo "Creating EC2 instance..."

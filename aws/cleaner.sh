@@ -22,13 +22,17 @@ if aws s3api head-bucket --bucket $BUCKET 2>/dev/null; then
 fi
 echo "Finished"
 
-echo "Deleting RDS instance..."
-test ! -z $(aws rds describe-db-instances --db-instance-identifier rds-aws-${USER} --output json 2>/dev/null) && \
-aws rds delete-db-instance \
+echo "Deleting RDS instances..."
+t=$(aws rds describe-db-instances \
 --db-instance-identifier rds-aws-${USER} \
+--output text --query DBInstances[*].DBInstanceIdentifier 2>/dev/null)
+for i in ${t[*]}; do
+aws rds delete-db-instance \
+--db-instance-identifier $i \
 --skip-final-snapshot \
---delete-automated-backups
-aws rds wait db-instance-deleted --db-instance-identifier rds-aws-${USER}
+--delete-automated-backups 1>/dev/null
+aws rds wait db-instance-deleted --db-instance-identifier $i
+done
 echo "Finished"
 
 echo "Removing EC2 key pair..."
@@ -36,12 +40,13 @@ aws ec2 delete-key-pair --key-name ${USER}"-aws-course" && rm -f ${AUTH_FOLDER}"
 echo "Finished"
 
 echo "Removing EC2 instance..."
-InstanceID=$(aws ec2 describe-instances --output text \
---filters Name=tag-key,Values=Name Name=tag-value,Values=${USER}"-aws-course" \
---query 'to_string(Reservations[*].Instances[*].InstanceId)'|tr -d '\133\135\042')
-test ! -z $InstanceID && \
-aws ec2 terminate-instances --instance-ids ${USER}"-aws-course" && \
-aws ec2 wait instance-terminated ${USER}"-aws-course"
+Instances=$(aws ec2 describe-instances \
+--output text --filters Name=tag-key,Values=Name Name=tag-value,Values=${USER}"-aws-course" \
+--query Reservations[*].Instances[*].InstanceId)
+for i in ${Instances[*]}; do
+aws ec2 terminate-instances --instance-ids $i 1>/dev/null
+aws ec2 wait instance-terminated --instance-ids $i
+done
 echo "Finished"
 
 echo "Removing DynamoDB table..."
