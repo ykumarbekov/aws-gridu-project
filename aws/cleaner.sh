@@ -17,9 +17,9 @@ BUCKET="ykumarbekov-534348"
 #############################################
 
 echo "BUCKET Deleting..."
-if aws s3api head-bucket --bucket $BUCKET 2>/dev/null; then
-  aws s3 rb s3://$BUCKET --force
-fi
+#if aws s3api head-bucket --bucket $BUCKET 2>/dev/null; then
+#  aws s3 rb s3://$BUCKET --force
+#fi
 echo "Finished"
 
 echo "Deleting RDS instances..."

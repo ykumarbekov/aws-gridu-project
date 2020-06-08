@@ -1,0 +1,37 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+              "dynamodb:*",
+              "s3:*",
+              "ec2:*",
+              "iam:GetRole",
+              "iam:GetRolePolicy",
+              "iam:ListInstanceProfiles",
+              "iam:ListRolePolicies",
+              "iam:PassRole",
+              "cloudwatch:PutMetricAlarm",
+              "cloudwatch:DescribeAlarms",
+              "cloudwatch:DeleteAlarms",
+              "application-autoscaling:RegisterScalableTarget",
+              "application-autoscaling:DeregisterScalableTarget",
+              "application-autoscaling:PutScalingPolicy",
+              "application-autoscaling:DeleteScalingPolicy",
+              "application-autoscaling:Describe*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "iam:CreateServiceLinkedRole",
+            "Resource": "arn:aws:iam::*:role/aws-service-role/spot.amazonaws.com/AWSServiceRoleForEC2Spot*",
+            "Condition": {
+                "StringLike": {
+                    "iam:AWSServiceName": "spot.amazonaws.com"
+                }
+            }
+        }
+    ]
+}

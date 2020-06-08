@@ -7,7 +7,8 @@ export AWS_DEFAULT_REGION="us-east-1"
 
 USER="ykumarbekov"
 USER_EMAIL="yermek.kumarbekov@gmail.com"
-ROLE="yk-project-lambda"
+#############################################
+ROLE=${USER}"-lambda-role"
 FUNC_NAME=${USER}"-trigger"
 KINESIS_OUTPUT_DSTREAM=${USER}"-dstream-out"
 SNS_TOPIC=${USER}"-alert"
@@ -67,4 +68,5 @@ aws lambda put-function-event-invoke-config \
 --function-name ${FUNC_NAME} \
 --destination-config "{\"OnSuccess\":{\"Destination\": \"${topic_arn}\"}}"
 echo "Finished"
+
 

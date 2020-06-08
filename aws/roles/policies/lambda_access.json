@@ -15,6 +15,7 @@
                 "logs:CreateLogStream",
                 "logs:PutLogEvents",
                 "sns:publish",
+                "dynamodb:*",
                 "s3:*"
             ],
             "Resource": "*"

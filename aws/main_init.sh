@@ -23,12 +23,20 @@ AUTH_FOLDER="./auth"
 SG_EC2="yk-ec2-534348"
 SG_RDS="yk-rds-534348"
 BUCKET="ykumarbekov-534348"
-ROLE_EC2="YKUMARBEKOV_EC2"
+ROLE_EC2=${USER}"-ec2-role"
 #############################################
 
 # Check auth folder and password file
 test ! -e ${AUTH_FOLDER} && echo "Folder ${AUTH_FOLDER} does not exist. Please create it before running script" && exit -1
 test ! -e ${AUTH_FOLDER}"/pwd.id" && echo "File pwd.id not found" && exit -1
+
+echo "Creating EC2 role..."
+test -z $(aws iam get-role --role-name ${ROLE_EC2} --output text --query Role.RoleName 2>/dev/null) && \
+  aws iam create-role --role-name ${ROLE_EC2} \
+  --assume-role-policy-document file://aws/roles/policies/ec2_trust_policy.json && \
+  aws iam put-role-policy --role-name ${ROLE_EC2} \
+  --policy-name "ec2_access" --policy-document file://aws/roles/policies/ec2_access.json
+echo "Finished"
 
 # Creating Security Groups
 echo "Creating Security Groups for EC2, RDS..."
@@ -55,6 +63,7 @@ aws s3api put-object --bucket $BUCKET --key "config/"
 aws s3api put-object --bucket $BUCKET --key "emr/logs/"
 aws s3api put-object --bucket $BUCKET --key "athena/result/"
 aws s3api put-object --bucket $BUCKET --key "athena/manifest/"
+aws s3api put-object --bucket $BUCKET --key "sagemaker/"
 aws s3 cp aws/emr/fraud_ip_job_ec2.py s3://$BUCKET/emr/code/
 echo "Finished"
 
@@ -105,7 +114,8 @@ echo "Finished"
 
 # Create Instance profile
 echo "Creating Instance Profile & Attaching ROLE_EC2..."
-aws iam remove-role-from-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE_EC2}
+# aws iam remove-role-from-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE_EC2}
+test ! -z $(aws iam get-instance-profile --instance-profile-name ${USER}"-aws-course-profile" 2>/dev/null) && \
 aws iam delete-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
 aws iam create-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
 # Attach Role:

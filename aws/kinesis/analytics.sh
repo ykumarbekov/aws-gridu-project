@@ -9,7 +9,7 @@ USER="ykumarbekov"
 KINESIS_INPUT_DSTREAM=${USER}"-dstream-in"
 KINESIS_OUTPUT_DSTREAM=${USER}"-dstream-out"
 KINESIS_ANALYTICS=${USER}"-analytics"
-ROLE="yk-project-analytics"
+ROLE=${USER}"kinesis-role"
 TRIGGER_OUT_NAME = "TRIGGER_TOP_VIEWS_100"
 #############################################
 
