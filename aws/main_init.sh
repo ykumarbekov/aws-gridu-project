@@ -53,18 +53,21 @@ echo "Finished"
 
 # Bucket creating
 echo "Re-Creating Bucket and Folders: logs/[views, reviews]; config; emr/logs; athena/[result/manifest]"
-if aws s3api head-bucket --bucket $BUCKET 2>/dev/null; then
-  aws s3 rb s3://$BUCKET --force
-fi
-aws s3api create-bucket --bucket $BUCKET
-aws s3api put-object --bucket $BUCKET --key "logs/views/"
-aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
-aws s3api put-object --bucket $BUCKET --key "config/"
-aws s3api put-object --bucket $BUCKET --key "emr/logs/"
-aws s3api put-object --bucket $BUCKET --key "athena/result/"
-aws s3api put-object --bucket $BUCKET --key "athena/manifest/"
-aws s3api put-object --bucket $BUCKET --key "sagemaker/"
-aws s3 cp aws/emr/fraud_ip_job_ec2.py s3://$BUCKET/emr/code/
+#if aws s3api head-bucket --bucket $BUCKET 2>/dev/null; then
+#  aws s3 rb s3://$BUCKET --force
+#fi
+#aws s3api create-bucket --bucket $BUCKET
+#aws s3api put-object --bucket $BUCKET --key "logs/views/"
+#aws s3api put-object --bucket $BUCKET --key "logs/reviews/"
+#aws s3api put-object --bucket $BUCKET --key "logs/predictions/"
+#aws s3api put-object --bucket $BUCKET --key "config/"
+#aws s3api put-object --bucket $BUCKET --key "emr/logs/"
+#aws s3 cp aws/emr/fraud_ip_job_ec2.py s3://$BUCKET/emr/code/
+#aws s3api put-object --bucket $BUCKET --key "athena/result/"
+#aws s3api put-object --bucket $BUCKET --key "athena/manifest/"
+#aws s3api put-object --bucket $BUCKET --key "sagemaker/datasets/input"
+#aws s3api put-object --bucket $BUCKET --key "sagemaker/datasets/train"
+#aws s3api put-object --bucket $BUCKET --key "sagemaker/datasets/validation"
 echo "Finished"
 
 # Creating RDS: PostgreSQL
@@ -76,34 +79,29 @@ RDS_PWD=$(cat ${AUTH_FOLDER}"/pwd.id"|tr "\n" "|"|awk -F "|" '{ split($1,v," ");
 SG_RDS_ID=$(aws ec2 describe-security-groups \
 --group-names ${SG_RDS} --output text --query SecurityGroups[0].GroupId)
 
-echo "Deleting RDS instance..."
-test ! -z $(aws rds describe-db-instances --db-instance-identifier rds-aws-${USER} --output json 2>/dev/null) && \
-aws rds delete-db-instance \
---db-instance-identifier rds-aws-${USER} \
---skip-final-snapshot \
---delete-automated-backups
-aws rds wait db-instance-deleted --db-instance-identifier rds-aws-${USER}
-echo "Finished"
-
 echo "Creating RDS instance..."
-aws rds create-db-instance \
---allocated-storage 20 --db-instance-class db.t2.micro \
---db-instance-identifier rds-aws-${USER} \
---db-name db1 \
---port 5432 \
---backup-retention-period 0 \
---vpc-security-group-ids ${SG_RDS_ID} \
---engine postgres \
---master-username ${RDS_USER} \
---master-user-password ${RDS_PWD} 1>/dev/null
-echo "Initializing..."
-aws rds wait db-instance-available --db-instance-identifier rds-aws-${USER}
+#if ! aws rds describe-db-instances \
+#--db-instance-identifier rds-aws-${USER} --output text \
+#--query DBInstances[*].DBInstanceIdentifier > /dev/null 2>&1; then
+#  aws rds create-db-instance \
+#  --allocated-storage 20 --db-instance-class db.t2.micro \
+#  --db-instance-identifier rds-aws-${USER} \
+#  --db-name db1 \
+#  --port 5432 \
+#  --backup-retention-period 0 \
+#  --vpc-security-group-ids ${SG_RDS_ID} \
+#  --engine postgres \
+#  --master-username ${RDS_USER} \
+#  --master-user-password ${RDS_PWD} 1>/dev/null
+  echo "Initializing..."
+#  aws rds wait db-instance-available --db-instance-identifier rds-aws-${USER}
+#fi
 echo "Finished"
 
-echo $(aws rds describe-db-instances \
---db-instance-identifier rds-aws-${USER} \
---output text \
---query DBInstances[0].Endpoint.Address)"|"${RDS_USER}"|"${RDS_PWD}|aws s3 cp - s3://${BUCKET}/config/rds.id
+#echo $(aws rds describe-db-instances \
+#--db-instance-identifier rds-aws-${USER} \
+#--output text \
+#--query DBInstances[0].Endpoint.Address)"|"${RDS_USER}"|"${RDS_PWD}|aws s3 cp - s3://${BUCKET}/config/rds.id
 
 # Create EC2 key pair
 echo "Creating EC2 key pair..."
@@ -115,10 +113,13 @@ echo "Finished"
 # Create Instance profile
 echo "Creating Instance Profile & Attaching ROLE_EC2..."
 # aws iam remove-role-from-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE_EC2}
-test ! -z $(aws iam get-instance-profile --instance-profile-name ${USER}"-aws-course-profile" 2>/dev/null) && \
+test ! -z $(aws iam get-instance-profile \
+--instance-profile-name ${USER}"-aws-course-profile" \
+--output text --query InstanceProfile.InstanceProfileName 2>/dev/null) && \
+aws iam remove-role-from-instance-profile --instance-profile-name ${USER}"-aws-course-profile" \
+--role-name ${ROLE_EC2} && \
 aws iam delete-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
 aws iam create-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
-# Attach Role:
 aws iam add-role-to-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE_EC2}
 echo "Finished"
 # Create EC2 instance
@@ -143,8 +144,9 @@ aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${USER}"-aws-
 echo "Finished"
 
 echo "Creating DynamoDB table..."
-test -z $(aws dynamodb describe-table --table-name fraud-ip-${USER} --output json \
---query Table.TableName 2>/dev/null) && aws dynamodb create-table \
+test -z $(aws dynamodb describe-table --table-name fraud-ip-${USER} \
+--output json --query Table.TableName 2>/dev/null) && \
+aws dynamodb create-table \
 --table-name fraud-ip-${USER} \
 --attribute-definitions AttributeName=ip,AttributeType=S \
 --key-schema AttributeName=ip,KeyType=HASH \

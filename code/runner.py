@@ -119,7 +119,13 @@ if __name__ == "__main__":
         with open(os.path.join(data['output_folder'], review_log_fn_name), 'w') as review_log:
             while rp > 0:
                 v = dict(rnd.choice(v_list))
-                v.update(dict(rnd.choice(reviews_list)))
+                # ***
+                rw_dict = dict(rnd.choice(reviews_list))
+                rw_dict['review'] = {'source': rw_dict['review']}
+                # print('vs: {}'.format(rw_dict))
+                # ***
+                # v.update(dict(rnd.choice(reviews_list)))
+                v.update(rw_dict)
                 json.dump(v, review_log)
                 review_log.write("\n")
                 rp = rp - 1
