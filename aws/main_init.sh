@@ -105,54 +105,58 @@ echo "Finished"
 
 # Create EC2 key pair
 echo "Creating EC2 key pair..."
-aws ec2 delete-key-pair --key-name ${USER}"-aws-course" && rm -f ${AUTH_FOLDER}"/"${USER}"-aws-course.pem" > /dev/null 2>&1
-aws ec2 create-key-pair --key-name ${USER}"-aws-course" --query 'KeyMaterial' --output text  > ${AUTH_FOLDER}"/"${USER}"-aws-course.pem"
-chmod 400 ${AUTH_FOLDER}"/"${USER}"-aws-course.pem"
+#aws ec2 delete-key-pair --key-name ${USER}"-aws-course" && rm -f ${AUTH_FOLDER}"/"${USER}"-aws-course.pem" > /dev/null 2>&1
+#aws ec2 create-key-pair --key-name ${USER}"-aws-course" --query 'KeyMaterial' --output text  > ${AUTH_FOLDER}"/"${USER}"-aws-course.pem"
+#chmod 400 ${AUTH_FOLDER}"/"${USER}"-aws-course.pem"
 echo "Finished"
 
 # Create Instance profile
 echo "Creating Instance Profile & Attaching ROLE_EC2..."
 # aws iam remove-role-from-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE_EC2}
-test ! -z $(aws iam get-instance-profile \
---instance-profile-name ${USER}"-aws-course-profile" \
---output text --query InstanceProfile.InstanceProfileName 2>/dev/null) && \
-aws iam remove-role-from-instance-profile --instance-profile-name ${USER}"-aws-course-profile" \
---role-name ${ROLE_EC2} && \
-aws iam delete-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
-aws iam create-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
-aws iam add-role-to-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE_EC2}
+#test ! -z $(aws iam get-instance-profile \
+#--instance-profile-name ${USER}"-aws-course-profile" \
+#--output text --query InstanceProfile.InstanceProfileName 2>/dev/null) && \
+#aws iam remove-role-from-instance-profile --instance-profile-name ${USER}"-aws-course-profile" \
+#--role-name ${ROLE_EC2} && \
+#aws iam delete-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
+#aws iam create-instance-profile --instance-profile-name ${USER}"-aws-course-profile"
+#aws iam add-role-to-instance-profile --instance-profile-name ${USER}"-aws-course-profile" --role-name ${ROLE_EC2}
 echo "Finished"
 # Create EC2 instance
 echo "Creating EC2 instance..."
-InstanceID=$(aws ec2 run-instances \
---image-id ami-0915e09cc7ceee3ab \
---count 1 \
---instance-type t2.micro \
---key-name ${USER}"-aws-course" \
---security-groups ${SG_EC2} \
---user-data file://aws/configurator.sh \
---tag-specification \
-'ResourceType=instance, Tags=[{Key=Name, Value='${USER}'-aws-course}]' \
---query 'Instances[*].InstanceId')
+#InstanceID=$(aws ec2 run-instances \
+#--image-id ami-0915e09cc7ceee3ab \
+#--count 1 \
+#--instance-type t2.micro \
+#--key-name ${USER}"-aws-course" \
+#--security-groups ${SG_EC2} \
+#--user-data file://aws/configurator.sh \
+#--tag-specification \
+#'ResourceType=instance, Tags=[{Key=Name, Value='${USER}'-aws-course}]' \
+#--query 'Instances[*].InstanceId')
 echo "Initializing..."
-aws ec2 wait instance-status-ok --instance-ids $InstanceID
+#aws ec2 wait instance-status-ok --instance-ids $InstanceID
 echo "Finished"
 
 # Associate Instance Profile
 echo "Associating Profile with Instance..."
-aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${USER}"-aws-course-profile" --instance-id $InstanceID
+#aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${USER}"-aws-course-profile" --instance-id $InstanceID
 echo "Finished"
 
-echo "Creating DynamoDB table..."
-test -z $(aws dynamodb describe-table --table-name fraud-ip-${USER} \
---output json --query Table.TableName 2>/dev/null) && \
-aws dynamodb create-table \
---table-name fraud-ip-${USER} \
---attribute-definitions AttributeName=ip,AttributeType=S \
---key-schema AttributeName=ip,KeyType=HASH \
---provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 1>/dev/null
-echo "Initializing..."
-aws dynamodb wait table-exists --table-name fraud-ip-${USER}
+echo "Creating DynamoDB tables..."
+tbl="fraud-ip-${USER}|ip|S reviews-${USER}|item|S"
+for i in ${tbl}; do
+  t=$(echo ${i}|cut -d '|' -f 1); f=$(echo ${i}|cut -d '|' -f 2); s=$(echo ${i}|cut -d '|' -f 3)
+  echo "table: ${t}"
+  test -z $(aws dynamodb describe-table --table-name ${t} \
+  --output json --query Table.TableName 2>/dev/null) && \
+  aws dynamodb create-table \
+  --table-name ${t} \
+  --attribute-definitions AttributeName=${f},AttributeType=${s} \
+  --key-schema AttributeName=${f},KeyType=HASH \
+  --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 1>/dev/null && \
+  echo "Initializing..." && aws dynamodb wait table-exists --table-name ${t}
+done
 echo "Finished"
 
 

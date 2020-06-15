@@ -6,7 +6,7 @@ import boto3
 def cmd_parser():
     result = {}
     try:
-        p = arg.ArgumentParser(prog="csv2dynamodb", usage="%(prog)s parameters", description="")
+        p = arg.ArgumentParser(prog="csv2dynamo", usage="%(prog)s parameters", description="")
         p.add_argument(
             "--input-key",
             help="Input folder. Must be provided",
@@ -41,17 +41,12 @@ def get_matching_s3_keys(s3_, bucket_, prefix='', suffix=''):
     if isinstance(prefix, str):
         kwargs['Prefix'] = prefix
     while True:
-        # The S3 API response is a large blob of metadata.
-        # 'Contents' contains information about the listed objects.
         resp = s3.list_objects_v2(**kwargs)
         if 'Contents' in resp:
             for obj_ in resp['Contents']:
                 key_ = obj_['Key']
                 if key_.startswith(prefix) and key_.endswith(suffix):
                     yield key_
-        # The S3 API is paginated, returning up to 1000 keys at a time.
-        # Pass the continuation token into the next response, until we
-        # reach the final page (when this field is missing).
         try:
             kwargs['ContinuationToken'] = resp['NextContinuationToken']
         except KeyError:

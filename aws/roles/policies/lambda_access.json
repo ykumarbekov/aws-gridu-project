@@ -16,7 +16,8 @@
                 "logs:PutLogEvents",
                 "sns:publish",
                 "dynamodb:*",
-                "s3:*"
+                "s3:*",
+                "sagemaker:*"
             ],
             "Resource": "*"
         }

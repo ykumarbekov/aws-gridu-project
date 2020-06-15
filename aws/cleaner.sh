@@ -49,9 +49,12 @@ aws ec2 wait instance-terminated --instance-ids $i
 done
 echo "Finished"
 
-echo "Removing DynamoDB table..."
-test ! -z $(aws dynamodb describe-table --table-name fraud-ip-${USER} --output json \
+echo "Removing DynamoDB tables..."
+tbl="fraud-ip-${USER} reviews-${USER}"
+for i in ${tbl}; do
+  test ! -z $(aws dynamodb describe-table --table-name ${i} --output json \
 --query Table.TableName 2>/dev/null) && \
-aws dynamodb delete-table --table-name fraud-ip-${USER} && \
-aws dynamodb wait table-not-exists --table-name fraud-ip-${USER}
+aws dynamodb delete-table --table-name ${i} && \
+aws dynamodb wait table-not-exists --table-name ${i}
+done
 echo "Finished"
