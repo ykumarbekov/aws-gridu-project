@@ -1,5 +1,3 @@
-AWS Athena  
-Task:  
 - Use Athena to calculate distribution of views by device types.  
 - Render collected statistics in QuickSight  
 ----

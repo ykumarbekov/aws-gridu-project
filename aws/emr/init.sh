@@ -6,12 +6,13 @@ export AWS_DEFAULT_REGION="us-east-1"
 
 ###### Must be manually updated according with your values
 USER="ykumarbekov"
+BUCKET="ykumarbekov-534348"
+SG_EC2="yk-ec2-534348"
+#############################################
 INSTANCE_TYPE="m4.large"
 INSTANCE_CORE_CNT="2"
-BUCKET="ykumarbekov-534348"
 TABLE="fraud-ip-"${USER}
 EMR_ROLE=${USER}"-emr-role"
-SG_EC2="yk-ec2-534348"
 KEY="test-emr-key"
 #############################################
 
