@@ -62,7 +62,7 @@ InstanceID=$(aws ec2 run-instances \
 --instance-type ${INSTANCE_TYPE} \
 --key-name ${KEY} \
 --security-groups ${SG_EC2} \
---user-data file://aws/configurator_ec2_hadoop.sh \
+--user-data file://aws/hadoop/configurator_ec2_hadoop.sh \
 --tag-specification \
 'ResourceType=instance, Tags=[{Key=Name, Value='${USER}'-ec2-hadoop}]' \
 --query 'Instances[*].InstanceId')

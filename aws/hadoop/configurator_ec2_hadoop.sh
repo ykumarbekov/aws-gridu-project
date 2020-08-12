@@ -16,13 +16,13 @@ echo "export HADOOP_CONF_DIR=/usr/local/hadoop-2.9.2/etc/hadoop" >> /root/.bash_
 echo "export HADOOP_MAPRED_HOME=/usr/local/hadoop-2.9.2" >> /root/.bash_profile && \
 echo "export HADOOP_HDFS_HOME=/usr/local/hadoop-2.9.2" >> /root/.bash_profile && \
 echo "export YARN_HOME=/usr/local/hadoop-2.9.2" >> /root/.bash_profile && \
-echo "PATH=$PATH:$HADOOP_HOME/bin" >> /root/.bash_profile
+#echo "PATH=$PATH:$HADOOP_HOME/bin" >> /root/.bash_profile
 # ##########
 git clone https://github.com/ykumarbekov/aws-gridu-project.git /opt/aws-gridu-project
 # ##########
-/bin/cp /opt/opt/aws-gridu-project/aws/hadoop/core-site.xml /usr/local/hadoop-2.9.2/etc/hadoop/
-/bin/cp /opt/opt/aws-gridu-project/aws/hadoop/hdfs-site.xml /usr/local/hadoop-2.9.2/etc/hadoop/
-/bin/cp /opt/opt/aws-gridu-project/aws/hadoop/mapred-site.xml /usr/local/hadoop-2.9.2/etc/hadoop/
-/bin/cp /opt/opt/aws-gridu-project/aws/hadoop/yarn-site.xml /usr/local/hadoop-2.9.2/etc/hadoop/
+/bin/cp /opt/aws-gridu-project/aws/hadoop/core-site.xml /usr/local/hadoop-2.9.2/etc/hadoop/
+/bin/cp /opt/aws-gridu-project/aws/hadoop/hdfs-site.xml /usr/local/hadoop-2.9.2/etc/hadoop/
+/bin/cp /opt/aws-gridu-project/aws/hadoop/mapred-site.xml /usr/local/hadoop-2.9.2/etc/hadoop/
+/bin/cp /opt/aws-gridu-project/aws/hadoop/yarn-site.xml /usr/local/hadoop-2.9.2/etc/hadoop/
 
 
