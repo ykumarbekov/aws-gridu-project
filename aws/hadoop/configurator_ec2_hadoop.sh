@@ -25,4 +25,4 @@ git clone https://github.com/ykumarbekov/aws-gridu-project.git /opt/aws-gridu-pr
 /bin/cp /opt/aws-gridu-project/aws/hadoop/mapred-site.xml /usr/local/hadoop-2.9.2/etc/hadoop/
 /bin/cp /opt/aws-gridu-project/aws/hadoop/yarn-site.xml /usr/local/hadoop-2.9.2/etc/hadoop/
 
-
+sed -i 's/export JAVA_HOME=${JAVA_HOME}/export JAVA_HOME=\/usr\/lib\/jvm\/java-1.8.0-amazon-corretto/' /usr/local/hadoop-2.9.2/etc/hadoop/hadoop-env.sh
