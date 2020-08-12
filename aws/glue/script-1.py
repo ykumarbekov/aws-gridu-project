@@ -31,7 +31,4 @@ result = fraud_ip.join(views, fraud_ip["ip"] == views["ip"], "inner") \
 # ##############################
 result.repartition(1).write.format("json").mode("overwrite").save("s3://ykumarbekov-534348/glue/target/")
 # ##############################
-# applymapping1 = ApplyMapping.apply(frame = datasource0, mappings = [("ip", "string", "ip", "string")], transformation_ctx = "applymapping1")
-# ##############################
-# datasink2 = glueContext.write_dynamic_frame.from_options(frame = applymapping1, connection_type = "s3", connection_options = {"path": "s3://ykumarbekov-534348/glue/target/"}, format = "json", transformation_ctx = "datasink2")
 job.commit()

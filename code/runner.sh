@@ -1,10 +1,13 @@
 #!/bin/bash
 
-BUCKET="ykumarbekov-534348"
-EC2_LOGS="/opt/logs"
-KINESIS_LOGS="/opt/logs_kinesis"
+#BUCKET="ykumarbekov-534348"
+BUCKET="ykumarbekov-318557"
+#EC2_LOGS="/opt/logs"
+EC2_LOGS="./logs"
+#KINESIS_LOGS="/opt/logs_kinesis"
 TARGET_FOLDER="/logs"
-PROJECT_FOLDER="/opt/aws-gridu-project"
+#PROJECT_FOLDER="/opt/aws-gridu-project"
+PROJECT_FOLDER="."
 
 # ##### LOGS GENERATING #####
 # Step 1. USERS
@@ -20,11 +23,20 @@ python3 $PROJECT_FOLDER/code/runner.py \
 for i in $(find $EC2_LOGS -type f -iname "*.log")
 do
   t1=$(basename -- $i)
+#  Parse filename => year/month/day/hhmmss.log
+  t0=${t1#*.}; y=${t0:4:4}; m=${t0:2:2}; d=${t0:0:2}; fname=${t0:8:10}
   folder=${t1%%.*}
-  target=${TARGET_FOLDER}"/"${folder}"/"${t1#*.}
-  kinesis_log=${KINESIS_LOGS}"/"${t1#*.}
-  if [ ${folder} == "views" ]; then cp $i ${kinesis_log}; fi
-  aws s3 mv $i s3://${BUCKET}${target}
+#  target=${TARGET_FOLDER}"/"${folder}"/"${t1#*.}
+  target=${TARGET_FOLDER}"/"${folder}"/year="${y}"/month="${m}"/day="${d}"/"${fname}
+#  kinesis_log=${KINESIS_LOGS}"/"${t1#*.}
+  if [ ${folder} == "views" ]
+  then
+#    cp $i ${kinesis_log}
+    echo "Kinesis logs commented"
+  fi
+#  aws s3 mv $i s3://${BUCKET}${target}
+  aws s3 cp $i s3://${BUCKET}${target}
+#  echo s3://${BUCKET}${target}
 done
 
 
