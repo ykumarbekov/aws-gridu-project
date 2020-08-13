@@ -28,6 +28,7 @@ sed -i 's/export JAVA_HOME=${JAVA_HOME}/export JAVA_HOME=\/usr\/lib\/jvm\/java-1
 # ##########
 ssh-keygen -t rsa -N '' -f /root/.ssh/id_rsa
 cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
+ssh-keyscan -H localhost >> /root/.ssh/known_hosts
 # ##########
 # ##########
 # Manually:
