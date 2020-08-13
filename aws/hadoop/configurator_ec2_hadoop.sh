@@ -30,7 +30,11 @@ ssh-keygen -t rsa -N '' -f /root/.ssh/id_rsa
 cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
 ssh-keyscan -H localhost >> /root/.ssh/known_hosts
 # ##########
+# Disable secondary namenode starting
+/bin/cp /usr/local/hadoop-2.9.2/sbin/start-dfs.sh /usr/local/hadoop-2.9.2/sbin/start-dfs.sh.copy
+sed -i 's/SECONDARY_NAMENODES=\$(\$HADOOP_PREFIX\/bin\/hdfs getconf -secondarynamenodes 2>\/dev\/null)/SECONDARY_NAMENODES=""/' /usr/local/hadoop-2.9.2/sbin/start-dfs.sh
 # ##########
 # Manually:
 # bin/hdfs namenode -format
-# Start processes
+# Start processes and view hdfs
+# sbin/start-dfs.sh // view: bin/hdfs dfs -ls hdfs://localhost:9000/
