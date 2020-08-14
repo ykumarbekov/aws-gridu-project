@@ -19,7 +19,7 @@ AUTH_FOLDER="./auth"
 ROLE_EC2=${USER}"-ec2-role"
 KEY=${USER}"-ec2-hadoop"
 INSTANCE_PROFILE=${USER}"-ec2-profile"
-INSTANCE_TYPE="t2.micro"
+INSTANCE_TYPE="t3.micro"
 IMAGE_AMI="ami-02354e95b39ca8dec"
 #############################################
 
@@ -31,18 +31,25 @@ echo "Finished"
 
 echo "Creating EC2 role..."
 test -z $(aws iam get-role --role-name ${ROLE_EC2} --output text --query Role.RoleName 2>/dev/null) && \
-  aws iam create-role --role-name ${ROLE_EC2} \
+aws iam create-role --role-name ${ROLE_EC2} \
   --assume-role-policy-document file://aws/roles/policies/ec2_trust_policy.json && \
-  aws iam put-role-policy --role-name ${ROLE_EC2} \
+aws iam put-role-policy --role-name ${ROLE_EC2} \
   --policy-name "ec2_access" --policy-document file://aws/roles/policies/ec2_access.json
 echo "Finished"
 
 echo "Creating Security Group for EC2"
-test -z $(aws ec2 describe-security-groups --group-names ${SG_EC2} \
---output json --query SecurityGroups[0].GroupId 2>/dev/null) && aws ec2 create-security-group \
---group-name ${SG_EC2} --description "${USER} EC2 launch" && \
+x=$(aws ec2 describe-security-groups --group-names ${SG_EC2} --output text --query SecurityGroups[0].GroupId 2>/dev/null)
+test -n ${x} && aws ec2 delete-security-group --group-name ${SG_EC2}
+aws ec2 create-security-group --group-name ${SG_EC2} --description "${USER} EC2 launch" && \
 aws ec2 authorize-security-group-ingress --group-name ${SG_EC2} --protocol tcp --port 22 --cidr 0.0.0.0/0
 echo "Finished"
+
+echo "Opening additional ports: HDFS: 50070; YARN RESOURCE MANAGER: 8088"
+read -p "Please enter your public IP ADDRESS, visit: https://www.showmyip.com/ :" ip
+test -z ${ip} && echo "Cannot identify IP address" && exit 1
+test -z $(echo ${ip}|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b") && echo "Incorrect IP address" && exit 1
+aws ec2 authorize-security-group-ingress --group-name ${SG_EC2} --protocol tcp --port 8088 --cidr ${ip}"/32" 2>/dev/null
+aws ec2 authorize-security-group-ingress --group-name ${SG_EC2} --protocol tcp --port 50070 --cidr ${ip}"/32" 2>/dev/null
 
 echo "Creating Instance Profile & Attaching ROLE_EC2..."
 test ! -z $(aws iam get-instance-profile \
@@ -73,11 +80,3 @@ echo "Finished"
 echo "Associating Profile with Instance..."
 aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${INSTANCE_PROFILE} --instance-id $InstanceID
 echo "Finished"
-
-echo "Opening additional ports: HDFS: 50070; YARN RESOURCE MANAGER: 8088"
-read -p "Please enter your public IP ADDRESS, visit: https://www.showmyip.com/ :" ip
-test -z ${ip} && echo "Cannot identify IP address" && exit 1
-test -z $(echo ${ip}|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b") && echo "Incorrect IP address" && exit 1
-
-aws ec2 authorize-security-group-ingress --group-name ${SG_EC2} --protocol tcp --port 8088 --cidr ${ip}"/32"
-aws ec2 authorize-security-group-ingress --group-name ${SG_EC2} --protocol tcp --port 50070 --cidr ${ip}"/32"
