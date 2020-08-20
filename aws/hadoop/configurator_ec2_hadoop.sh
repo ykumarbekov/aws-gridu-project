@@ -4,18 +4,29 @@ USER="ykumarbekov"
 
 yum update -y
 yum install git -y
+# AWS JDK Coretto 8
 wget https://corretto.aws/downloads/latest/amazon-corretto-8-x64-linux-jdk.rpm
-wget https://downloads.apache.org/hadoop/common/hadoop-2.9.2/hadoop-2.9.2.tar.gz
 yum localinstall amazon-corretto-8-x64-linux-jdk.rpm -y
-tar -xf hadoop-2.9.2.tar.gz -C /usr/local
-# ##########
 echo "export JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto" >> /root/.bash_profile
+# Apache Derby
+wget https://downloads.apache.org/db/derby/db-derby-10.14.2.0/db-derby-10.14.2.0-bin.tar.gz
+tar -xf db-derby-10.14.2.0-bin.tar.gz -C /usr/local
+test -d /usr/local/db-derby-10.14.2.0-bin && mv /usr/local/db-derby-10.14.2.0-bin /usr/local/derby
+# Apache Hadoop
+wget https://downloads.apache.org/hadoop/common/hadoop-2.9.2/hadoop-2.9.2.tar.gz
+tar -xf hadoop-2.9.2.tar.gz -C /usr/local
 test -d /usr/local/hadoop-2.9.2 &&
 echo "export HADOOP_HOME=/usr/local/hadoop-2.9.2" >> /root/.bash_profile && \
 echo "export HADOOP_CONF_DIR=/usr/local/hadoop-2.9.2/etc/hadoop" >> /root/.bash_profile && \
 echo "export HADOOP_MAPRED_HOME=/usr/local/hadoop-2.9.2" >> /root/.bash_profile && \
 echo "export HADOOP_HDFS_HOME=/usr/local/hadoop-2.9.2" >> /root/.bash_profile && \
-echo "export YARN_HOME=/usr/local/hadoop-2.9.2" >> /root/.bash_profile && \
+echo "export YARN_HOME=/usr/local/hadoop-2.9.2" >> /root/.bash_profile
+# Apache Hive
+wget https://downloads.apache.org/hive/hive-2.3.7/apache-hive-2.3.7-bin.tar.gz
+tar -xf apache-hive-2.3.7-bin.tar.gz -C /usr/local
+test -d /usr/local/apache-hive-2.3.7-bin && \
+mv /usr/local/apache-hive-2.3.7-bin /usr/local/hive && \
+echo "export HIVE_HOME=/usr/local/hive" >> /root/.bash_profile
 # ##########
 git clone https://github.com/ykumarbekov/aws-gridu-project.git /opt/aws-gridu-project
 # ##########
@@ -34,7 +45,15 @@ ssh-keyscan -H localhost >> /root/.ssh/known_hosts
 /bin/cp /usr/local/hadoop-2.9.2/sbin/start-dfs.sh /usr/local/hadoop-2.9.2/sbin/start-dfs.sh.copy
 sed -i 's/SECONDARY_NAMENODES=\$(\$HADOOP_PREFIX\/bin\/hdfs getconf -secondarynamenodes 2>\/dev\/null)/SECONDARY_NAMENODES=""/' /usr/local/hadoop-2.9.2/sbin/start-dfs.sh
 # ##########
-# Manually:
+# Manually steps:
 # bin/hdfs namenode -format
-# Start processes and view hdfs
+# Start Hadoop
 # sbin/start-dfs.sh // view: bin/hdfs dfs -ls hdfs://localhost:9000/
+# sbin/start-yarn.sh
+# Create Hive warehouse dir
+# hdfs dfs -mkdir -p /user/hive/warehouse
+# hdfs dfs -mkdir /tmp
+
+# Start Derby
+# cd /usr/local/derby && nohup ./bin/startNetworkServer -h 0.0.0.0 &
+# exit
