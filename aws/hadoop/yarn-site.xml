@@ -8,14 +8,28 @@
 <name>yarn.nodemanager.auxservices.mapreduce.shuffle.class</name>
 <value>org.apache.hadoop.mapred.ShuffleHandler</value>
 </property>
-<!-- Below parameters depends on EC2 instance type -->
-<!-- These parameters for t3.micro with 2 cores or 2*4 = 8 Vcores -->
 <property>
 <name>yarn.scheduler.maximum-allocation-vcores</name>
-<value>4</value>
+<value>2</value>
+</property>
+<property>
+<name>yarn.scheduler.minimum-allocation-vcores</name>
+<value>1</value>
 </property>
 <property>
 <name>yarn.nodemanager.resource.cpu-vcores</name>
-<value>8</value>
+<value>4</value>
+</property>
+<property>
+<name>yarn.nodemanager.resource.memory-mb</name>
+<value>3072</value>
+</property>
+<property>
+<name>yarn.scheduler.minimum-allocation-mb</name>
+<value>512</value>
+</property>
+<property>
+<name>yarn.scheduler.maximum-allocation-mb</name>
+<value>1024</value>
 </property>
 </configuration>

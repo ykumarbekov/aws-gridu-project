@@ -19,7 +19,7 @@ AUTH_FOLDER="./auth"
 ROLE_EC2=${USER}"-ec2-role"
 KEY=${USER}"-ec2-hadoop"
 INSTANCE_PROFILE=${USER}"-ec2-profile"
-INSTANCE_TYPE="t3.micro"
+INSTANCE_TYPE="t3.medium"
 IMAGE_AMI="ami-02354e95b39ca8dec"
 #############################################
 

@@ -1,0 +1,16 @@
+Calculating Yarn parameters
+-----
+Example: ec2_instance = t3.medium // vCPU: 2, Mem: 4GiB, price: $0.0418 Price/hr
+Edit: yarn-site.xml
+-----
+yarn.scheduler.maximum-allocation-vcores = // maximum allocation for every container request at the RM
+yarn.nodemanager.resource.cpu-vcores = // Number of CPU cores that can be allocated for containers // 1 NodeManager
+yarn.nodemanager.resource.memory-mb = // Amount of physical memory, in MB, that can be allocated for containers 1 NodeManager
+------
+processes: DataNode, NameNode, ResourceManager, NodeManager - 1 vCore // Mem: 1GB
+yarn.nodemanager.resource.cpu-vcores = 4 (using Cores -> vCores multiplier)
+yarn.scheduler.maximum-allocation-vcores = 2 (means you can run 2 Containers with max allocation)
+yarn.scheduler.minimum-allocation-vcores = 1
+yarn.nodemanager.resource.memory-mb = 3072
+yarn.scheduler.minimum-allocation-mb = 512
+yarn.scheduler.maximum-allocation-mb = 1024 (means you can run 3 Containers with max allocation)

@@ -20,4 +20,8 @@ Steps:
    hive --version  
    // Now your cluster is ready to work  
    // Explore HDFS FS: http://[EC2 DNS Name]:50070  
+   // *****  Hive manipulations  
+   $HADOOP_HOME/bin/hdfs dfs -mkdir /user/hive/sales
+   $HADOOP_HOME/bin/hdfs dfs -copyFromLocal /opt/aws-gridu-project/aws/hadoop/hive_samples/sales_01_2009.csv /user/hive/sales/  
+   ./hive -f /opt/aws-gridu-project/aws/hadoop/hive_samples/sales_table.hql
     
