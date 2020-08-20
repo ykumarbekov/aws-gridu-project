@@ -45,7 +45,7 @@ aws ec2 authorize-security-group-ingress --group-name ${SG_EC2} --protocol tcp -
 echo "Finished"
 
 echo "Opening additional ports: HDFS: 50070; YARN RESOURCE MANAGER: 8088"
-read -p "Please enter your public IP ADDRESS, visit: https://www.showmyip.com/ :" ip
+read -p "Please enter your public IP ADDRESS, visit: https://showip.net/ :" ip
 test -z ${ip} && echo "Cannot identify IP address" && exit 1
 test -z $(echo ${ip}|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b") && echo "Incorrect IP address" && exit 1
 aws ec2 authorize-security-group-ingress --group-name ${SG_EC2} --protocol tcp --port 8088 --cidr ${ip}"/32" 2>/dev/null

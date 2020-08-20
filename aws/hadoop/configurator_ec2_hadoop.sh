@@ -26,7 +26,9 @@ wget https://downloads.apache.org/hive/hive-2.3.7/apache-hive-2.3.7-bin.tar.gz
 tar -xf apache-hive-2.3.7-bin.tar.gz -C /usr/local
 test -d /usr/local/apache-hive-2.3.7-bin && \
 mv /usr/local/apache-hive-2.3.7-bin /usr/local/hive && \
-echo "export HIVE_HOME=/usr/local/hive" >> /root/.bash_profile
+echo "export HIVE_HOME=/usr/local/hive" >> /root/.bash_profile && \
+echo "export HIVE_CONF_DIR=/usr/local/hive/conf" >> /root/.bash_profile && \
+/bin/cp /opt/aws-gridu-project/aws/hadoop/hive-default.xml /usr/local/hive/conf/
 # ##########
 git clone https://github.com/ykumarbekov/aws-gridu-project.git /opt/aws-gridu-project
 # ##########
@@ -45,15 +47,4 @@ ssh-keyscan -H localhost >> /root/.ssh/known_hosts
 /bin/cp /usr/local/hadoop-2.9.2/sbin/start-dfs.sh /usr/local/hadoop-2.9.2/sbin/start-dfs.sh.copy
 sed -i 's/SECONDARY_NAMENODES=\$(\$HADOOP_PREFIX\/bin\/hdfs getconf -secondarynamenodes 2>\/dev\/null)/SECONDARY_NAMENODES=""/' /usr/local/hadoop-2.9.2/sbin/start-dfs.sh
 # ##########
-# Manually steps:
-# bin/hdfs namenode -format
-# Start Hadoop
-# sbin/start-dfs.sh // view: bin/hdfs dfs -ls hdfs://localhost:9000/
-# sbin/start-yarn.sh
-# Create Hive warehouse dir
-# hdfs dfs -mkdir -p /user/hive/warehouse
-# hdfs dfs -mkdir /tmp
 
-# Start Derby
-# cd /usr/local/derby && nohup ./bin/startNetworkServer -h 0.0.0.0 &
-# exit
